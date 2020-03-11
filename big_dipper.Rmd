@@ -1,0 +1,170 @@
+---
+title: "Big Dipper"
+output: html_notebook
+---
+
+
+```{r setup}
+library(tidyverse)
+
+library(datapasta)
+```
+
+
+Big Dipper, as x-y points
+
+```{r}
+
+dipper <- tribble(
+  ~name, ~x, ~y, ~mag, 
+  #--/--/--/----
+  "Dubhe", -18, 3, 1.79,
+  "Merak", -11, 4, 2.37,
+  "Phad", -6, 3, 2.438,
+  "Megrez", 1, 1, 3.312,
+  "Alroth", 3, -5, 1.77,
+  "Mizar", 13, -5, 2.04,
+  "Alkaid", 15, 3, 1.86
+)
+
+dipper
+
+```
+
+
+```{r}
+
+ggplot(dipper, aes(x = x, y = y)) +
+  geom_point()
+
+```
+
+
+---
+
+Vince H. Kuo and Robert J. Beichner, [Stars of the Big Dipper: a 3-D Vector Activity](https://projects.ncsu.edu/PER/Articles/BigDipperPaper.pdf)
+
+
+Label Name D (ly) RA (h) Dec (deg) Vector Triplet (ly)
+a Dubhe 105 11:03:43.7 61:45:03 <12.1, 92.5, -48.2>
+ß Merak 80 11:01:50.5 56:22:57 <11.1, 66.6, -42.9>
+? Phecda 90 11:53:49.8 53:41:41 <1.4, 72.5, -53.3>
+d Megrez 65 12:15:25.6 57:01:57 <-2.4, 54.5, -35.3>
+e Alioth 70 12:54:01.7 55:57:35 <-9.1, 58.0, -38.1>
+? Mizar 88 13:23:55.5 54:55:31 <-18.1, 72.0, -47.2>
+80 Alcor 89 13:25:13.5 54:59:17 <-18.5, 72.9, -47.6>
+? Alkaid 210 13:47:32.4 49:18:48 <-61.8, 159.2, -122.2>
+
+
+```{r}
+dipper <- tribble(
+  ~Label, ~Name, ~D_ly, ~RA_h, ~Dec_deg, ~x, ~y, ~z,
+  #-----/------/------/------/---------/---/---/----
+  "a", "Dubhe", 105, "11:03:43.7", "61:45:03", 12.1, 92.5, -48.2,
+  "ß", "Merak", 80, "11:01:50.5", "56:22:57", 11.1, 66.6, -42.9,
+  "?", "Phecda", 90, "11:53:49.8", "53:41:41", 1.4, 72.5, -53.3,
+  "d", "Megrez", 65, "12:15:25.6", "57:01:57", -2.4, 54.5, -35.3,
+  "e", "Alioth", 70, "12:54:01.7", "55:57:35", -9.1, 58.0, -38.1,
+  "?", "Mizar", 88, "13:23:55.5", "54:55:31", -18.1, 72.0, -47.2,
+  "80", "Alcor", 89, "13:25:13.5", "54:59:17", -18.5, 72.9, -47.6,
+  "?", "Alkaid", 210, "13:47:32.4", "49:18:48", -61.8, 159.2, -122.2
+)
+
+
+```
+
+
+
+```{r}
+
+ggplot(dipper, aes(x = x, y = y)) +
+  geom_point()
+
+```
+
+
+---
+
+
+[Star Charts and Constellations](http://nifty.stanford.edu/2009/reid-starmap/starmap.html)
+
+http://nifty.stanford.edu/2009/reid-starmap/
+
+
+```{r}
+dipper_vectors <- tribble(
+  ~x, ~y,
+  "BENETNASCH", "MIZAR",
+  "MIZAR", "ALIOTH",
+  "ALIOTH", "MEGREZ",
+  "MEGREZ", "PHECDA",
+  "PHECDA", "MERAK",
+  "MERAK", "DUBHE",
+  "MEGREZ", "DUBHE"
+)
+
+dipper_vectors
+```
+
+
+
+```{r}
+
+stars_txt <- readtext::readtext("stars.txt")
+
+```
+
+
+```{r}
+
+read_lines("stars.txt", n_max = 10)
+
+stars <- read_delim("stars.txt", delim = " ", 
+                      col_types = cols(
+                        x = col_double(),
+                        y = col_double(),
+                        z = col_double(),
+                        HDnum = col_double(),
+                        mag = col_double(),
+                        HRnum = col_double(),
+                        name = col_character()
+                        )
+)
+
+
+```
+
+
+
+```{r}
+
+data.table::read.table("stars.txt", header = FALSE, sep = " ",
+           col.names = paste0("V", seq_len(7)), fill = TRUE)
+
+```
+
+
+```{r}
+
+dipper <- read_delim("stars_dipper.txt", delim = ",", col_names = FALSE)
+
+dipper <- read_delim("stars_dipper.txt", delim = ",", 
+                     col_names = c("x", "y", "z", "HDnum", "mag", "HRnum", "name_a", "name_b", "name_c"))
+                       
+dipper <- read_delim("stars_dipper.txt", delim = ",", 
+                     col_names = c("x", "y", "z", "HDnum", "mag", "HRnum", "name_a", "name_b", "name_c"),
+                     col_types = cols(   
+                       x = col_double(),
+                       y = col_double(),
+                       z = col_double(),
+                       HDnum = col_double(),
+                       mag = col_double(),
+                       HRnum = col_double(),
+                       name_a = col_character(),
+                       name_b = col_character(),
+                       name_c = col_character())
+                     )
+
+
+```
+
