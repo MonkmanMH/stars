@@ -1,0 +1,128 @@
+---
+title: "read the `stars.txt` file"
+output: html_notebook
+---
+
+
+```{r setup}
+library(tidyverse)
+
+library(datapasta)
+```
+
+This is a nasty case...the source data is from here.
+
+[Star Charts and Constellations](http://nifty.stanford.edu/2009/reid-starmap/starmap.html)
+
+
+The description of the file is here:
+
+* The first three fields are the x, y and z coordinates for the star. We will ignore the z coordinate, and use only the x and y coordinates. Each axis in the coordinate system goes from -1 to +1, and the centre point is 0,0. (See the figure below.)
+
+* The fourth field is the Henry Draper number, which is simply a unique identifier for the star.
+
+* The fifth field is the magnitude (or brightness) of the star.
+
+* The sixth field is Harvard Revised number, another identifier.
+
+* The seventh field exists only for a small number of stars and is a semicolon-separated list of names for a star. A star may have several names.
+
+The issue is with the last column.
+
+
+I started with {readr} but this doesn't quite work; the issue originates with the last column.
+
+
+A basic read drops the last column entirely:
+
+```{r}
+
+read_delim("stars_10.txt", delim = " ") 
+
+```
+
+Specifying the last column as a character doesn't help, since it pre-parses to the 6 columns, and then bonks out on the 7 and 9 column structure (note that row 6 last column is "CAPH; CAS BETA" where the semi-colon is the separator and the 2nd name has a space).
+
+```{r}
+
+stars <- read_delim("stars_10.txt", delim = " ", 
+                      col_types = cols(
+                        x = col_double(),
+                        y = col_double(),
+                        z = col_double(),
+                        HDnum = col_double(),
+                        mag = col_double(),
+                        HRnum = col_double(),
+                        name = col_character()
+                        )
+)
+
+
+```
+
+
+So I tried defining the names, which got me closer. By using `col_names` I got to a place where it was reading in at least the first part of the last column.
+
+
+```{r}
+
+read_delim("stars_10.txt", delim = " ", col_names = FALSE)
+
+
+read_delim("stars_10.txt", delim = " ", 
+ col_names = c("x", "y", "z", "HDnum", "mag", "HRnum", "name"))
+   
+
+```
+
+
+So I extended the number of "name_" variables:
+
+
+```{r}
+
+
+read_delim("stars_10.txt", delim = " ", 
+ col_names = c("x", "y", "z", "HDnum", "mag", "HRnum", "name_a", "name_b", "name_c"))
+   
+
+```
+ 
+This works here, but a quick scan of the main file reveals cases where there are three names (i.e. two semi-colons), two of which are doubles like "CAS BETA". I didn't explore the entire universe...
+
+I thought about using `readr::read_lines` but I don't see an easy way to parse this.
+
+```{r}
+
+readr::read_lines("stars_10.txt")
+
+```
+
+
+
+I also tried the {readtext} package but that was a dead-end as well.
+
+* https://readtext.quanteda.io/
+
+
+
+```{r}
+
+readtext::readtext("stars_10.txt")
+
+```
+
+
+Based on a stackoverflow question the `read.table()` from {data.table} seemed like a possibility, but it then wraps the bonus text as V1 etc...
+
+```{r}
+
+read.table("stars.txt", header = FALSE, sep = " ",
+           col.names = paste0("V", seq_len(7)), fill = TRUE)
+
+```
+
+
+This might require a regex solution, or maybe creating an index variable (based on the row names), splitting the file into cols 1-6 as neatly parsed columns, the names (where they exist) as a second, using regex to fix the latter, then joining them back together.
+
+
